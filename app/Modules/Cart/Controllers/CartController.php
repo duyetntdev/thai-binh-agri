@@ -31,11 +31,15 @@ class CartController extends Controller
      */
     public function add(Request $request, int $productId): JsonResponse|RedirectResponse
     {
-        $request->validate([
-            'quantity' => ['sometimes', 'integer', 'min:1', 'max:100'],
-        ]);
+        $product = $this->productRepository->findByIdOrFail($productId);
 
-        $product  = $this->productRepository->findByIdOrFail($productId);
+        $rules = ['quantity' => ['sometimes', 'integer', 'min:1']];
+        if ($product->stock > 0) {
+            $rules['quantity'][] = 'max:' . $product->stock;
+        }
+
+        $request->validate($rules);
+
         $quantity = (int) $request->input('quantity', 1);
 
         if (! $product->isActive() || ! $product->isInStock()) {

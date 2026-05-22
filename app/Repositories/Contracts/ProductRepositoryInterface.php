@@ -16,6 +16,13 @@ interface ProductRepositoryInterface extends BaseRepositoryInterface
     public function paginateActive(array $filters = [], int $perPage = 16): LengthAwarePaginator;
 
     /**
+     * Get paginated products for admin with optional filters.
+     *
+     * @param array{category?: string, search?: string, status?: string} $filters
+     */
+    public function paginateAll(array $filters = [], int $perPage = 20): LengthAwarePaginator;
+
+    /**
      * Find an active product by its slug.
      */
     public function findActiveBySlug(string $slug): Product;

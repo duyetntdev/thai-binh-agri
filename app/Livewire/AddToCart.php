@@ -39,9 +39,12 @@ class AddToCart extends Component
 
         // Notify CartIcon to refresh
         $this->emit('cartUpdated');
+        $this->dispatchBrowserEvent('cart-added');
+    }
 
-        // Reset the "added" flash after 2 seconds via JS
-        $this->js("setTimeout(() => \$wire.added = false, 2000)");
+    public function updatedQuantity(): void
+    {
+        $this->quantity = max(1, min($this->quantity, $this->product->stock));
     }
 
     public function incrementQuantity(): void
