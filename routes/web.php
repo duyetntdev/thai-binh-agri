@@ -7,12 +7,14 @@ use Illuminate\Support\Facades\Route;
 | Web Routes
 |--------------------------------------------------------------------------
 | Module routes are loaded by their respective ServiceProviders.
-| See app/Modules/*/Providers/*ServiceProvider.php
+| See app/Modules/[Module]/Providers/[Module]ServiceProvider.php
 |--------------------------------------------------------------------------
 */
 
 // Health check
-Route::get('/up', fn () => response()->json(['status' => 'ok']));
+Route::get('/up', function () {
+    return response()->json(['status' => 'ok']);
+});
 
 // Module routes are registered via ServiceProviders:
 // - Auth    → app/Modules/Auth/Routes/web.php

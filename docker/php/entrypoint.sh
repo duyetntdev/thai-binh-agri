@@ -40,35 +40,17 @@ else
     echo "OK vendor/ already exists"
 fi
 
-# ── 5. Wait for MySQL using PHP PDO (reads env vars — avoids shell escaping) ──
-echo ">> Waiting for MySQL at ${DB_HOST:-mysql}..."
-MAX_TRIES=30
+# ── 5. Wait for MySQL using mysqladmin ping ────────────────────────────────────
+DB_HOST_VAL="${DB_HOST:-mysql}"
+DB_PORT_VAL="${DB_PORT:-3306}"
+DB_USER_VAL="${DB_USERNAME:-laravel}"
+DB_PASS_VAL="${DB_PASSWORD:-secret}"
+
+echo ">> Waiting for MySQL at ${DB_HOST_VAL}:${DB_PORT_VAL}..."
+MAX_TRIES=60
 COUNT=0
 
-# Write a small PHP script to avoid shell variable escaping issues
-cat > /tmp/check_db.php << 'PHPEOF'
-<?php
-$host = getenv('DB_HOST') ?: 'mysql';
-$port = getenv('DB_PORT') ?: '3306';
-$db   = getenv('DB_DATABASE') ?: 'thai_binh_agri';
-$user = getenv('DB_USERNAME') ?: 'laravel';
-$pass = getenv('DB_PASSWORD') ?: 'secret';
-
-try {
-    $pdo = new PDO(
-        "mysql:host={$host};port={$port};dbname={$db}",
-        $user,
-        $pass,
-        [PDO::ATTR_TIMEOUT => 3, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-    echo "ok";
-    exit(0);
-} catch (Exception $e) {
-    exit(1);
-}
-PHPEOF
-
-until php /tmp/check_db.php 2>/dev/null | grep -q "ok"; do
+until mariadb-admin ping -h"${DB_HOST_VAL}" -P"${DB_PORT_VAL}" -u"${DB_USER_VAL}" -p"${DB_PASS_VAL}" --skip-ssl --silent 2>/dev/null; do
     COUNT=$((COUNT + 1))
     if [ "$COUNT" -ge "$MAX_TRIES" ]; then
         echo "ERROR: MySQL not ready after ${MAX_TRIES} attempts."
@@ -84,23 +66,8 @@ echo ">> Running migrations..."
 php artisan migrate --force --no-interaction
 
 # ── 7. Seed only if users table is empty ──────────────────────────────────────
-cat > /tmp/check_seed.php << 'PHPEOF'
-<?php
-$host = getenv('DB_HOST') ?: 'mysql';
-$port = getenv('DB_PORT') ?: '3306';
-$db   = getenv('DB_DATABASE') ?: 'thai_binh_agri';
-$user = getenv('DB_USERNAME') ?: 'laravel';
-$pass = getenv('DB_PASSWORD') ?: 'secret';
-
-try {
-    $pdo = new PDO("mysql:host={$host};port={$port};dbname={$db}", $user, $pass);
-    echo $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
-} catch (Exception $e) {
-    echo 0;
-}
-PHPEOF
-
-USER_COUNT=$(php /tmp/check_seed.php 2>/dev/null)
+USER_COUNT=$(mariadb -h"${DB_HOST_VAL}" -P"${DB_PORT_VAL}" -u"${DB_USER_VAL}" -p"${DB_PASS_VAL}" \
+    --skip-ssl "${DB_DATABASE:-thai_binh_agri}" -sNe "SELECT COUNT(*) FROM users" 2>/dev/null || echo 0)
 
 if [ "$USER_COUNT" = "0" ]; then
     echo ">> Seeding database..."
@@ -116,9 +83,6 @@ php artisan storage:link --force 2>/dev/null || true
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
-
-# ── Cleanup temp files ────────────────────────────────────────────────────────
-rm -f /tmp/check_db.php /tmp/check_seed.php
 
 echo ""
 echo "  App   -> http://localhost:8000"

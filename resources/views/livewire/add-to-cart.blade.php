@@ -16,15 +16,15 @@
         <div class="flex items-center gap-2">
             {{-- Quantity selector --}}
             <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                <button wire:click="decrementQuantity"
+                <button type="button" wire:click="decrementQuantity"
                         class="px-2 py-1.5 text-gray-500 hover:bg-gray-100 transition text-sm font-bold">−</button>
                 <span class="px-3 py-1.5 text-sm font-medium min-w-[2rem] text-center">{{ $quantity }}</span>
-                <button wire:click="incrementQuantity"
+                <button type="button" wire:click="incrementQuantity"
                         class="px-2 py-1.5 text-gray-500 hover:bg-gray-100 transition text-sm font-bold">+</button>
             </div>
 
             {{-- Add button --}}
-            <button wire:click="add"
+            <button type="button" wire:click="add"
                     wire:loading.attr="disabled"
                     wire:loading.class="opacity-60 cursor-wait"
                     class="flex-1 text-sm bg-green-600 text-white py-2 rounded-lg

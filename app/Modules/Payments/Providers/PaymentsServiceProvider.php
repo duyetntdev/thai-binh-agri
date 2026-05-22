@@ -3,6 +3,7 @@
 namespace App\Modules\Payments\Providers;
 
 use App\Modules\Payments\Services\VnpayService;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class PaymentsServiceProvider extends ServiceProvider
@@ -19,7 +20,10 @@ class PaymentsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../Routes/web.php');
+        Route::middleware('web')->group(function () {
+            $this->loadRoutesFrom(__DIR__ . '/../Routes/web.php');
+        });
+
         $this->loadViewsFrom(__DIR__ . '/../Views', 'payments');
     }
 }

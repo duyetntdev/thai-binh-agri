@@ -21,7 +21,7 @@ class AddToCart extends Component
         $this->product = $product;
     }
 
-    public function add(Cart $cart): void
+    public function add(): void
     {
         if (! $this->product->isActive() || ! $this->product->isInStock()) {
             $this->addError('stock', 'Sản phẩm hiện không có sẵn.');
@@ -33,12 +33,12 @@ class AddToCart extends Component
             return;
         }
 
-        $cart->add($this->product, $this->quantity);
+        app(Cart::class)->add($this->product, $this->quantity);
 
         $this->added = true;
 
         // Notify CartIcon to refresh
-        $this->dispatch('cart-updated');
+        $this->emit('cartUpdated');
 
         // Reset the "added" flash after 2 seconds via JS
         $this->js("setTimeout(() => \$wire.added = false, 2000)");
