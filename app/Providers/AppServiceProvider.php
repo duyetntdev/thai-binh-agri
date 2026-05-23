@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Trust the Nginx proxy and use X-Forwarded-* headers
+        // This ensures the app generates the correct URL scheme (http/https)
+        \Illuminate\Support\Facades\URL::forceScheme('http');
     }
 }
