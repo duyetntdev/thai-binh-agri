@@ -5,8 +5,10 @@
 @section('content')
 
 {{-- ===== HERO ===== --}}
-<section class="bg-gradient-to-br from-green-700 to-green-500 text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 text-center">
+<section class="relative overflow-hidden text-white py-20"
+         style="background-image: url('{{ asset('images/ba.png') }}'); background-size: cover; background-position: center;">
+    <div class="absolute inset-0 bg-green-900/60"></div>
+    <div class="relative max-w-7xl mx-auto px-4 text-center">
         <h1 class="text-4xl md:text-5xl font-bold mb-4">Nông Sản Sạch Thái Bình</h1>
         <p class="text-lg text-green-100 mb-8 max-w-xl mx-auto">
             Trực tiếp từ nông dân — tươi ngon, an toàn, giá tốt.
@@ -73,8 +75,6 @@
             @endforeach
         </div>
     @endif
-</section>
-
 {{-- ===== SẢN PHẨM ĐÃ MUA GẦN ĐÂY (chỉ hiện khi đã login) ===== --}}
 @auth
     @if($recentlyPurchased->isNotEmpty())
