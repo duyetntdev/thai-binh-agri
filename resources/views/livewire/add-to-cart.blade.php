@@ -1,4 +1,5 @@
-<div>
+<div x-data="{ added: @entangle('added') }"
+     x-init="window.addEventListener('cart-added', () => { added = true; setTimeout(() => added = false, 2000) })">
     @error('stock')
         <p class="text-xs text-red-500 mb-1">{{ $message }}</p>
     @enderror

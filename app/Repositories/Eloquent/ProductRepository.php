@@ -36,6 +36,27 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         return $query->paginate($perPage)->withQueryString();
     }
 
+    public function paginateAll(array $filters = [], int $perPage = 20): LengthAwarePaginator
+    {
+        $query = Product::with('category');
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['category'])) {
+            $query->whereHas('category', fn ($q) => $q->where('slug', $filters['category']));
+        }
+
+        if (! empty($filters['search'])) {
+            $query->where('name', 'like', '%' . $filters['search'] . '%');
+        }
+
+        $query->latest();
+
+        return $query->paginate($perPage)->withQueryString();
+    }
+
     public function findActiveBySlug(string $slug): Product
     {
         return Product::with('category')
@@ -111,11 +132,11 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
                   ->where('status', \App\Models\OrderStatus::DELIVERED->value);
             })
             ->orderByDesc(
-                \App\Models\OrderItem::select('created_at')
+                \App\Models\OrderItem::select('order_items.created_at')
                     ->whereColumn('product_id', 'products.id')
                     ->join('orders', 'orders.id', '=', 'order_items.order_id')
                     ->where('orders.user_id', $userId)
-                    ->latest()
+                    ->latest('order_items.created_at')
                     ->limit(1)
             )
             ->limit($limit)

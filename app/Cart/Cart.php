@@ -61,26 +61,25 @@ class Cart
      */
     public function add(Product $product, int $quantity = 1): void
     {
-        $items = Session::get(self::SESSION_KEY, []);
-
-        if (isset($items[$product->id])) {
-            $items[$product->id]['quantity'] += $quantity;
-        } else {
-            $items[$product->id] = (new CartItem(
-                productId: $product->id,
-                name:      $product->name,
-                slug:      $product->slug,
-                price:     (float) $product->price,
-                quantity:  $quantity,
-                thumbnail: $product->thumbnail,
-            ))->toArray();
+        if ($quantity <= 0) {
+            return;
         }
 
-        // Clamp to available stock
-        $items[$product->id]['quantity'] = min(
-            $items[$product->id]['quantity'],
-            $product->stock,
-        );
+        $items = Session::get(self::SESSION_KEY, []);
+        $currentQuantity = isset($items[$product->id])
+            ? (int) $items[$product->id]['quantity']
+            : 0;
+
+        $newQuantity = min($currentQuantity + $quantity, $product->stock);
+
+        $items[$product->id] = (new CartItem(
+            productId: $product->id,
+            name:      $product->name,
+            slug:      $product->slug,
+            price:     (float) $product->price,
+            quantity:  $newQuantity,
+            thumbnail: $product->thumbnail,
+        ))->toArray();
 
         Session::put(self::SESSION_KEY, $items);
     }

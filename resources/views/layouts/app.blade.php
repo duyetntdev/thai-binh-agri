@@ -38,13 +38,34 @@
             {{-- Navigation --}}
             <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
                 <a href="{{ route('home') }}" class="text-gray-600 hover:text-green-700 transition">Trang chủ</a>
-                <a href="{{ route('products.index') }}" class="text-gray-600 hover:text-green-700 transition">Sản phẩm</a>
-                @foreach($headerCategories ?? [] as $cat)
-                    <a href="{{ route('products.index', ['category' => $cat->slug]) }}"
-                       class="text-gray-600 hover:text-green-700 transition">
-                        {{ $cat->name }}
-                    </a>
-                @endforeach
+
+                <div class="relative group">
+                    <button type="button"
+                            class="flex items-center gap-1 text-gray-600 hover:text-green-700 transition">
+                        Sản phẩm
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-2xl shadow-lg z-20 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        <a href="{{ route('products.index') }}"
+                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-700 transition">Tất cả sản phẩm</a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        @foreach($headerCategories ?? [] as $cat)
+                            <a href="{{ route('products.index', ['category' => $cat->slug]) }}"
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-700 transition">
+                                {{ $cat->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+
+                <a href="{{ route('home.about') }}" class="text-gray-600 hover:text-green-700 transition">Giới thiệu</a>
+                <a href="{{ route('home.contact') }}" class="text-gray-600 hover:text-green-700 transition">Liên hệ</a>
+                <a href="{{ route('home.news') }}" class="text-gray-600 hover:text-green-700 transition">Tin tức</a>
+                <a href="{{ route('home.policy') }}" class="text-gray-600 hover:text-green-700 transition">Chính sách</a>
             </nav>
 
             {{-- Right side: Cart + Auth --}}
@@ -142,6 +163,23 @@
         © {{ date('Y') }} Nông Sản Thái Bình. All rights reserved.
     </div>
 </footer>
+
+{{-- Zalo / Message / Call widget --}}
+<div class="fixed right-5 bottom-5 z-50 flex flex-col items-end gap-3">
+    <a href="https://zalo.me/0985626134" target="_blank" rel="noreferrer noopener"
+       class="group inline-flex items-center gap-3 rounded-full bg-white/95 px-4 py-3 shadow-lg ring-1 ring-black/5 transition-transform duration-200 hover:-translate-y-0.5" aria-label="Chat Zalo">
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#06A3F4] text-white text-xl shadow-sm">Z</span>
+    </a>
+    <a href="https://m.me/0985626134" target="_blank" rel="noreferrer noopener"
+       class="group inline-flex items-center gap-3 rounded-full bg-white/95 px-4 py-3 shadow-lg ring-1 ring-black/5 transition-transform duration-200 hover:-translate-y-0.5" aria-label="Nhắn tin qua Facebook">
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white text-xl shadow-sm">💬</span>
+    </a>
+    <a href="tel:0985626134"
+       class="group inline-flex items-center gap-3 rounded-full bg-white/95 px-4 py-3 shadow-lg ring-1 ring-black/5 transition-transform duration-200 hover:-translate-y-0.5" aria-label="Gọi ngay">
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-700 text-white text-xl shadow-sm">📞</span>
+        <span class="sr-only">Gọi ngay</span>
+    </a>
+</div>
 
 @livewireScripts
 
