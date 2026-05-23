@@ -168,15 +168,23 @@
 <div class="fixed right-5 bottom-5 z-50 flex flex-col items-end gap-3">
     <a href="https://zalo.me/0985626134" target="_blank" rel="noreferrer noopener"
        class="group inline-flex items-center gap-3 rounded-full bg-white/95 px-4 py-3 shadow-lg ring-1 ring-black/5 transition-transform duration-200 hover:-translate-y-0.5" aria-label="Chat Zalo">
-        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#06A3F4] text-white text-xl shadow-sm">Z</span>
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#06A3F4] shadow-sm">
+            <img src="{{ asset('images/zalo-icon.png') }}" alt="Zalo" class="h-6 w-6" />
+        </span>
+        <span class="sr-only">Chat Zalo</span>
     </a>
     <a href="https://m.me/0985626134" target="_blank" rel="noreferrer noopener"
        class="group inline-flex items-center gap-3 rounded-full bg-white/95 px-4 py-3 shadow-lg ring-1 ring-black/5 transition-transform duration-200 hover:-translate-y-0.5" aria-label="Nhắn tin qua Facebook">
-        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white text-xl shadow-sm">💬</span>
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 shadow-sm">
+            <img src="{{ asset('images/message.png') }}" alt="Message" class="h-6 w-6" />
+        </span>
+        <span class="sr-only">Nhắn tin qua Facebook</span>
     </a>
     <a href="tel:0985626134"
        class="group inline-flex items-center gap-3 rounded-full bg-white/95 px-4 py-3 shadow-lg ring-1 ring-black/5 transition-transform duration-200 hover:-translate-y-0.5" aria-label="Gọi ngay">
-        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-700 text-white text-xl shadow-sm">📞</span>
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-700 shadow-sm">
+            <img src="{{ asset('images/call.jpg') }}" alt="Gọi" class="h-6 w-6 rounded-full object-cover" />
+        </span>
         <span class="sr-only">Gọi ngay</span>
     </a>
 </div>
