@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Trust the Nginx proxy and use X-Forwarded-* headers
         // This ensures the app generates the correct URL scheme (http/https)
-        \Illuminate\Support\Facades\URL::forceScheme('http');
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }
