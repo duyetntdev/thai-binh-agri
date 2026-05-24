@@ -7,6 +7,7 @@ use App\Modules\Auth\Requests\LoginRequest;
 use App\Modules\Auth\Services\AuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -19,6 +20,10 @@ class LoginController extends Controller
 
     public function login(LoginRequest $request): RedirectResponse
     {
+        Log::info('Login attempt', [
+            'email'    => $request->email,
+            'remember' => $request->boolean('remember'),
+        ]);
         $user = $this->authService->login(
             email: $request->email,
             password: $request->password,
