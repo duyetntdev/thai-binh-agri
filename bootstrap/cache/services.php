@@ -41,6 +41,14 @@
     37 => 'App\\Modules\\Payments\\Providers\\PaymentsServiceProvider',
     38 => 'App\\Modules\\Admin\\Providers\\AdminServiceProvider',
     39 => 'App\\Providers\\AppServiceProvider',
+    40 => 'App\\Modules\\Auth\\Providers\\AuthServiceProvider',
+    41 => 'App\\Modules\\Admin\\Providers\\AdminServiceProvider',
+    42 => 'App\\Modules\\Home\\Providers\\HomeServiceProvider',
+    43 => 'App\\Modules\\Cart\\Providers\\CartServiceProvider',
+    44 => 'App\\Modules\\Products\\Providers\\ProductsServiceProvider',
+    45 => 'App\\Modules\\Orders\\Providers\\OrdersServiceProvider',
+    46 => 'App\\Modules\\Payments\\Providers\\PaymentsServiceProvider',
+    47 => 'Livewire\\LivewireServiceProvider',
   ),
   'eager' => 
   array (
@@ -69,6 +77,14 @@
     22 => 'App\\Modules\\Payments\\Providers\\PaymentsServiceProvider',
     23 => 'App\\Modules\\Admin\\Providers\\AdminServiceProvider',
     24 => 'App\\Providers\\AppServiceProvider',
+    25 => 'App\\Modules\\Auth\\Providers\\AuthServiceProvider',
+    26 => 'App\\Modules\\Admin\\Providers\\AdminServiceProvider',
+    27 => 'App\\Modules\\Home\\Providers\\HomeServiceProvider',
+    28 => 'App\\Modules\\Cart\\Providers\\CartServiceProvider',
+    29 => 'App\\Modules\\Products\\Providers\\ProductsServiceProvider',
+    30 => 'App\\Modules\\Orders\\Providers\\OrdersServiceProvider',
+    31 => 'App\\Modules\\Payments\\Providers\\PaymentsServiceProvider',
+    32 => 'Livewire\\LivewireServiceProvider',
   ),
   'deferred' => 
   array (
