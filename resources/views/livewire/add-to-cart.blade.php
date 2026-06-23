@@ -1,11 +1,10 @@
-<div x-data="{ added: @entangle('added') }"
+<div x-data="{ added: false }"
      x-init="window.addEventListener('cart-added', () => { added = true; setTimeout(() => added = false, 2000) })">
     @error('stock')
         <p class="text-xs text-red-500 mb-1">{{ $message }}</p>
     @enderror
 
-    @if($added)
-        {{-- Success state --}}
+    <template x-if="added">
         <div class="w-full text-sm bg-green-600 text-white py-2 rounded-lg text-center font-medium
                     flex items-center justify-center gap-1">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13,7 +12,8 @@
             </svg>
             Đã thêm vào giỏ
         </div>
-    @else
+    </template>
+    <template x-if="!added">
         @if($compact)
             {{-- Compact layout for product card --}}
             <div class="flex items-center gap-2">
@@ -74,5 +74,5 @@
                 <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
             @enderror
         @endif
-    @endif
+    </template>
 </div>
