@@ -16,7 +16,7 @@
             </div>
             <div>
                 <h2 class="text-xl font-semibold text-gray-800 mb-2">Điện thoại</h2>
-                <p>0912 345 678</p>
+                <p>0985.626.134</p>
             </div>
             <div>
                 <h2 class="text-xl font-semibold text-gray-800 mb-2">Email</h2>
