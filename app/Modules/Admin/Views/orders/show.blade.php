@@ -23,9 +23,9 @@
 
         <div class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
             <p class="text-sm text-gray-500">Trạng thái đơn hàng</p>
-            <p class="mt-3 text-lg font-semibold text-gray-900">{{ ucfirst($order->status) }}</p>
+            <p class="mt-3 text-lg font-semibold text-gray-900">{{ ucfirst($order->status->label()) }}</p>
             <p class="mt-4 text-sm text-gray-500">Trạng thái thanh toán</p>
-            <p class="mt-1 text-lg font-semibold text-gray-900">{{ ucfirst($order->payment_status) }}</p>
+            <p class="mt-1 text-lg font-semibold text-gray-900">{{ ucfirst($order->payment_status->label()) }}</p>
         </div>
 
         <div class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -62,7 +62,7 @@
                 <label class="block text-sm font-medium text-gray-700">Trạng thái mới</label>
                 <select name="status" class="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
                     @foreach(\App\Models\OrderStatus::cases() as $statusOption)
-                        <option value="{{ $statusOption->value }}" {{ $order->status === $statusOption->value ? 'selected' : '' }}>{{ $statusOption->label() }}</option>
+                        <option value="{{ $statusOption->value }}" {{ $order->status->label() === $statusOption->label() ? 'selected' : '' }}>{{ $statusOption->label() }}</option>
                     @endforeach
                 </select>
                 @error('status')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror

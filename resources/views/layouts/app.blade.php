@@ -154,7 +154,7 @@
             <h3 class="font-bold text-white mb-3">Liên hệ</h3>
             <ul class="space-y-1 text-sm">
                 <li>📍 123 Đường Lý Bôn, TP. Thái Bình</li>
-                <li>📞 0912 345 678</li>
+                <li>📞 0985.626.134</li>
                 <li>✉️ info@thaibinh-agri.vn</li>
             </ul>
         </div>

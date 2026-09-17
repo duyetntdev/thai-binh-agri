@@ -43,8 +43,8 @@
                         <td class="px-4 py-4 font-medium text-gray-900">#{{ $order->id }}</td>
                         <td class="px-4 py-4 text-gray-600">{{ $order->user->name }}</td>
                         <td class="px-4 py-4 text-gray-900">{{ number_format($order->total_amount, 0, ',', '.') }}₫</td>
-                        <td class="px-4 py-4 text-gray-700">{{ ucfirst($order->status) }}</td>
-                        <td class="px-4 py-4 text-gray-700">{{ ucfirst($order->payment_status) }}</td>
+                        <td class="px-4 py-4 text-gray-700">{{ ucfirst($order->status->label()) }}</td>
+                        <td class="px-4 py-4 text-gray-700">{{ ucfirst($order->payment_status->label()) }}</td>
                         <td class="px-4 py-4 text-gray-500">{{ $order->created_at->format('d/m/Y') }}</td>
                         <td class="px-4 py-4">
                             <a href="{{ route('admin.orders.show', $order) }}" class="text-green-600 hover:underline">Xem</a>

@@ -32,7 +32,7 @@ return new class extends Migration
                 'title' => 'Liên hệ',
                 'slug' => 'lien-he',
                 'meta_title' => 'Liên hệ — Nông Sản Thái Bình',
-                'content' => '<p>Mọi thắc mắc và yêu cầu hỗ trợ xin vui lòng liên hệ với chúng tôi qua các kênh sau.</p><div><strong>Địa chỉ:</strong> 123 Đường Lý Bôn, TP. Thái Bình</div><div><strong>Điện thoại:</strong> 0912 345 678</div><div><strong>Email:</strong> info@thaibinh-agri.vn</div><div><strong>Giờ làm việc:</strong> Thứ 2 - Thứ 7: 8:00 - 18:00</div>',
+                'content' => '<p>Mọi thắc mắc và yêu cầu hỗ trợ xin vui lòng liên hệ với chúng tôi qua các kênh sau.</p><div><strong>Địa chỉ:</strong> 123 Đường Lý Bôn, TP. Thái Bình</div><div><strong>Điện thoại:</strong> 0985.626.134</div><div><strong>Email:</strong> info@thaibinh-agri.vn</div><div><strong>Giờ làm việc:</strong> Thứ 2 - Thứ 7: 8:00 - 18:00</div>',
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
