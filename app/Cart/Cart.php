@@ -61,7 +61,7 @@ class Cart
      */
     public function add(Product $product, int $quantity = 1): void
     {
-        if ($quantity <= 0) {
+        if ($quantity <= 0 || ! $product->isActive() || ! $product->isInStock()) {
             return;
         }
 
@@ -74,10 +74,10 @@ class Cart
 
         $items[$product->id] = (new CartItem(
             productId: $product->id,
-            name:      $product->name,
-            slug:      $product->slug,
-            price:     (float) $product->price,
-            quantity:  $newQuantity,
+            name: $product->name,
+            slug: $product->slug,
+            price: (float) $product->price,
+            quantity: $newQuantity,
             thumbnail: $product->thumbnail,
         ))->toArray();
 
@@ -87,7 +87,7 @@ class Cart
     /**
      * Set the quantity of a cart item directly.
      */
-    public function updateQuantity(int $productId, int $quantity): void
+    public function updateQuantity(int $productId, int $quantity, int $availableStock): void
     {
         $items = Session::get(self::SESSION_KEY, []);
 
@@ -97,10 +97,17 @@ class Cart
 
         if ($quantity <= 0) {
             $this->remove($productId);
+
             return;
         }
 
-        $items[$productId]['quantity'] = $quantity;
+        if ($availableStock <= 0) {
+            $this->remove($productId);
+
+            return;
+        }
+
+        $items[$productId]['quantity'] = min($quantity, $availableStock);
         Session::put(self::SESSION_KEY, $items);
     }
 
@@ -132,7 +139,7 @@ class Cart
         return $this->items()
             ->map(fn (CartItem $item) => [
                 'product_id' => $item->productId,
-                'quantity'   => $item->quantity,
+                'quantity' => $item->quantity,
             ])
             ->values()
             ->all();

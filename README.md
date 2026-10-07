@@ -368,6 +368,8 @@ Container sẽ tự động:
 - Chạy `db:seed` (nếu DB trống)
 - Tạo `storage:link`
 
+`AdministrativeAreaSeeder` lấy dữ liệu tỉnh/thành và phường/xã từ `provinces.open-api.vn`, nên container cần kết nối HTTPS ra Internet khi seed.
+
 **3. Truy cập**
 
 | URL | Mô tả |

@@ -18,11 +18,15 @@ class Order extends Model
         'status',
         'payment_status',
         'notes',
+        'shipping_address',
+        'shipping_phone',
+        'province_id',
+        'ward_id',
     ];
 
     protected $casts = [
-        'total_amount'   => 'decimal:2',
-        'status'         => OrderStatus::class,
+        'total_amount' => 'decimal:2',
+        'status' => OrderStatus::class,
         'payment_status' => PaymentStatus::class,
     ];
 
@@ -39,6 +43,16 @@ class Order extends Model
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
+    }
+
+    public function province(): BelongsTo
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function ward(): BelongsTo
+    {
+        return $this->belongsTo(Ward::class);
     }
 
     public function isPaid(): bool

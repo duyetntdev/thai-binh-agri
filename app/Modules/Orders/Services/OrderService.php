@@ -6,6 +6,7 @@ use App\Exceptions\InsufficientStockException;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\PaymentStatus;
+use App\Models\Product;
 use App\Models\User;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 class OrderService
 {
     public function __construct(
-        private readonly OrderRepositoryInterface   $orderRepository,
+        private readonly OrderRepositoryInterface $orderRepository,
         private readonly ProductRepositoryInterface $productRepository,
     ) {}
 
@@ -30,20 +31,38 @@ class OrderService
     /**
      * Create a new order with stock validation inside a transaction.
      *
-     * @param array<int, array{product_id: int, quantity: int}> $items
+     * @param  array<int, array{product_id: int, quantity: int}>  $items
      *
      * @throws InsufficientStockException
      * @throws \Throwable
      */
-    public function create(User $user, array $items, string $paymentMethod, ?string $notes = null): Order
-    {
-        return DB::transaction(function () use ($user, $items, $notes) {
+    public function create(
+        User $user,
+        array $items,
+        string $paymentMethod,
+        int $provinceId,
+        int $wardId,
+        string $shippingAddress,
+        string $shippingPhone,
+        ?string $notes = null,
+    ): Order {
+        if ($items === []) {
+            throw new \InvalidArgumentException('Đơn hàng phải có ít nhất một sản phẩm.');
+        }
+
+        foreach ($items as $item) {
+            if (! isset($item['product_id'], $item['quantity']) || (int) $item['quantity'] < 1) {
+                throw new \InvalidArgumentException('Số lượng sản phẩm phải lớn hơn 0.');
+            }
+        }
+
+        return DB::transaction(function () use ($user, $items, $notes, $provinceId, $wardId, $shippingAddress, $shippingPhone) {
             $totalAmount = 0;
-            $orderItems  = [];
+            $orderItems = [];
 
             foreach ($items as $item) {
                 // Lock the row to prevent race conditions on stock
-                $product      = $this->productRepository->findForUpdate($item['product_id']);
+                $product = $this->productRepository->findForUpdate($item['product_id']);
                 $totalAmount += $product->price * $item['quantity'];
 
                 // Throws InsufficientStockException if not enough stock
@@ -51,23 +70,27 @@ class OrderService
 
                 $orderItems[] = [
                     'product_id' => $product->id,
-                    'quantity'   => $item['quantity'],
-                    'price'      => $product->price,
+                    'quantity' => $item['quantity'],
+                    'price' => $product->price,
                 ];
             }
 
             $order = $this->orderRepository->create([
-                'user_id'        => $user->id,
-                'total_amount'   => $totalAmount,
-                'status'         => OrderStatus::PENDING,
+                'user_id' => $user->id,
+                'total_amount' => $totalAmount,
+                'status' => OrderStatus::PENDING,
                 'payment_status' => PaymentStatus::PENDING,
-                'notes'          => $notes,
+                'notes' => $notes,
+                'shipping_address' => $shippingAddress,
+                'shipping_phone' => $shippingPhone,
+                'province_id' => $provinceId,
+                'ward_id' => $wardId,
             ]);
 
             foreach ($orderItems as $item) {
                 $order->items()->create($item);
                 // Tăng sold_count cho sản phẩm
-                \App\Models\Product::where('id', $item['product_id'])
+                Product::where('id', $item['product_id'])
                     ->increment('sold_count', $item['quantity']);
             }
 

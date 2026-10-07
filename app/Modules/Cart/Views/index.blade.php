@@ -106,22 +106,127 @@
                     </div>
 
                     @auth
-                        <a href="{{ route('orders.store') }}"
-                           onclick="event.preventDefault(); document.getElementById('checkout-form').submit();"
-                           class="block w-full text-center bg-green-600 text-white font-semibold py-3
-                                  rounded-lg hover:bg-green-700 transition">
-                            Đặt hàng ngay
-                        </a>
-                        {{-- Hidden form to POST to orders.store --}}
-                        <form id="checkout-form" method="POST" action="{{ route('orders.store') }}" class="hidden">
+                        <form id="checkout-form" method="POST" action="{{ route('orders.store') }}" class="space-y-3">
                             @csrf
                             @foreach($items as $item)
                                 <input type="hidden" name="items[{{ $loop->index }}][product_id]" value="{{ $item->productId }}">
                                 <input type="hidden" name="items[{{ $loop->index }}][quantity]" value="{{ $item->quantity }}">
                             @endforeach
                             <input type="hidden" name="payment_method" value="cod">
-                            <input type="hidden" name="shipping_address" value="{{ auth()->user()->address ?? '' }}">
+
+                            <div>
+                                <label for="province_id" class="mb-1 block text-sm font-medium text-gray-700">Tỉnh/thành phố</label>
+                                <select id="province_id" name="province_id" required
+                                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600">
+                                    <option value="">Chọn tỉnh/thành phố</option>
+                                    @foreach($provinces as $province)
+                                        <option value="{{ $province->id }}" @selected((string) old('province_id') === (string) $province->id)>
+                                            {{ $province->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('province_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="ward_id" class="mb-1 block text-sm font-medium text-gray-700">Phường/xã</label>
+                                <select id="ward_id" name="ward_id" required disabled
+                                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600 disabled:bg-gray-100">
+                                    <option value="">Chọn tỉnh/thành phố trước</option>
+                                </select>
+                                @error('ward_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="shipping_address" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Số nhà, tên đường
+                                </label>
+                                <input id="shipping_address" name="shipping_address" type="text" required maxlength="500"
+                                       autocomplete="street-address" value="{{ old('shipping_address', auth()->user()->address) }}"
+                                       class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600">
+                                @error('shipping_address')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="shipping_phone" class="mb-1 block text-sm font-medium text-gray-700">Số điện thoại nhận hàng</label>
+                                <input id="shipping_phone" name="shipping_phone" type="tel" required maxlength="30"
+                                       autocomplete="tel" value="{{ old('shipping_phone', auth()->user()->phone) }}"
+                                       class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600">
+                                @error('shipping_phone')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="notes" class="mb-1 block text-sm font-medium text-gray-700">Ghi chú giao hàng (không bắt buộc)</label>
+                                <textarea id="notes" name="notes" rows="2" maxlength="500"
+                                          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600">{{ old('notes') }}</textarea>
+                                @error('notes')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <button type="submit"
+                                    class="block w-full text-center bg-green-600 text-white font-semibold py-3
+                                           rounded-lg hover:bg-green-700 transition">
+                                Đặt hàng ngay
+                            </button>
                         </form>
+                        <script>
+                            (() => {
+                                const provinceSelect = document.getElementById('province_id');
+                                const wardSelect = document.getElementById('ward_id');
+                                const wardsUrl = @json(route('cart.wards', ['province' => '__PROVINCE__']));
+                                const oldWardId = @json((string) old('ward_id', ''));
+                                let requestController;
+
+                                async function loadWards(selectedWardId = '') {
+                                    requestController?.abort();
+                                    requestController = new AbortController();
+                                    wardSelect.replaceChildren(new Option('Đang tải phường/xã...', ''));
+                                    wardSelect.disabled = true;
+
+                                    if (!provinceSelect.value) {
+                                        wardSelect.replaceChildren(new Option('Chọn tỉnh/thành phố trước', ''));
+                                        return;
+                                    }
+
+                                    try {
+                                        const url = wardsUrl.replace('__PROVINCE__', encodeURIComponent(provinceSelect.value));
+                                        const response = await fetch(url, {
+                                            headers: { Accept: 'application/json' },
+                                            signal: requestController.signal,
+                                        });
+
+                                        if (!response.ok) throw new Error('Không tải được danh sách phường/xã.');
+
+                                        const wards = await response.json();
+                                        wardSelect.replaceChildren(new Option('Chọn phường/xã', ''));
+
+                                        wards.forEach((ward) => {
+                                            const option = new Option(`${ward.name}`, ward.id);
+                                            option.selected = String(ward.id) === String(selectedWardId);
+                                            wardSelect.add(option);
+                                        });
+
+                                        wardSelect.disabled = wards.length === 0;
+                                    } catch (error) {
+                                        if (error.name === 'AbortError') return;
+                                        wardSelect.replaceChildren(new Option('Không tải được danh sách phường/xã', ''));
+                                    }
+                                }
+
+                                provinceSelect.addEventListener('change', () => loadWards());
+
+                                if (provinceSelect.value) loadWards(oldWardId);
+                            })();
+                        </script>
                     @else
                         <a href="{{ route('login') }}"
                            class="block w-full text-center bg-green-600 text-white font-semibold py-3
