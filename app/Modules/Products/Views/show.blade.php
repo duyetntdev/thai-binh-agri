@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', "{{ $product->name }} — Nông Sản Thái Bình")
+@section('title', $product->name . ' — Nông Sản Thái Bình')
 
 @section('content')
 @php
