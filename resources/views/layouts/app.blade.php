@@ -25,14 +25,27 @@
 <body class="bg-gray-50 text-gray-800 antialiased">
 
 {{-- ===== HEADER ===== --}}
-<header class="bg-white shadow-sm sticky top-0 z-50">
+<header x-data="{ categorySidebarOpen: false }"
+        @keydown.escape.window="categorySidebarOpen = false"
+        class="bg-white shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
+
+            <button type="button"
+                    @click="categorySidebarOpen = true"
+                    aria-controls="mobile-category-sidebar"
+                    :aria-expanded="categorySidebarOpen"
+                    aria-label="Mở danh mục sản phẩm"
+                    class="inline-flex items-center justify-center rounded-lg p-2 text-gray-600 hover:bg-gray-100 hover:text-green-700 md:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
 
             {{-- Logo --}}
             <a href="{{ route('home') }}" class="flex items-center gap-2 font-bold text-xl text-green-700">
                 <span class="text-2xl">🌾</span>
-                <span>Nông Sản Thái Bình</span>
+                <span class="hidden sm:inline">Nông Sản Thái Bình</span>
             </a>
 
             {{-- Navigation --}}
@@ -112,6 +125,50 @@
             </div>
         </div>
     </div>
+
+    <div x-cloak x-show="categorySidebarOpen" class="fixed inset-0 z-[60] md:hidden" style="display: none">
+        <button type="button"
+                @click="categorySidebarOpen = false"
+                class="absolute inset-0 h-full w-full bg-black/50"
+                aria-label="Đóng danh mục"></button>
+
+        <nav id="mobile-category-sidebar"
+             x-show="categorySidebarOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full"
+             aria-label="Danh mục sản phẩm"
+             class="absolute inset-y-0 left-0 w-72 max-w-[85vw] overflow-y-auto bg-white p-6 shadow-xl">
+            <div class="mb-6 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-gray-900">Danh mục sản phẩm</h2>
+                <button type="button" @click="categorySidebarOpen = false" aria-label="Đóng danh mục"
+                        class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <ul class="space-y-2">
+                <li>
+                    <a href="{{ route('products.index', request()->only(['search', 'sort'])) }}"
+                       class="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+                        Tất cả sản phẩm
+                    </a>
+                </li>
+                @foreach($mobileCategories ?? [] as $category)
+                    <li>
+                        <a href="{{ route('products.index', array_merge(request()->only(['search', 'sort']), ['category' => $category->slug])) }}"
+                           class="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-700">
+                            {{ $category->name }}
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </nav>
+    </div>
 </header>
 
 {{-- Flash messages --}}
@@ -153,7 +210,7 @@
         <div>
             <h3 class="font-bold text-white mb-3">Liên hệ</h3>
             <ul class="space-y-1 text-sm">
-                <li>📍 123 Đường Lý Bôn, TP. Thái Bình</li>
+                <li>📍 xóm 10, thôn Tào Xá, xã Đông Cường - Đông Hưng - Thái Bình</li>
                 <li>📞 0985.626.134</li>
                 <li>✉️ info@thaibinh-agri.vn</li>
             </ul>

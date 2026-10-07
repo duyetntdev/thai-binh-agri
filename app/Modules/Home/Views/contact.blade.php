@@ -12,7 +12,7 @@
         <div class="grid gap-6 md:grid-cols-2 text-gray-700">
             <div>
                 <h2 class="text-xl font-semibold text-gray-800 mb-2">Địa chỉ</h2>
-                <p>123 Đường Lý Bôn, TP. Thái Bình</p>
+                <p>xóm 10, thôn Tào Xá, xã Đông Cường - Đông Hưng - Thái Bình</p>
             </div>
             <div>
                 <h2 class="text-xl font-semibold text-gray-800 mb-2">Điện thoại</h2>

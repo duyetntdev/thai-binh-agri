@@ -41,9 +41,14 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         // Share top-level categories to the main layout header
         View::composer('layouts.app', function ($view) {
+            $categories = $this->app->make(CategoryRepositoryInterface::class)->allWithActiveProductCount();
+
             $view->with(
                 'headerCategories',
-                $this->app->make(CategoryRepositoryInterface::class)->allWithActiveProductCount()->take(5)
+                $categories->take(5)
+            )->with(
+                'mobileCategories',
+                $categories
             );
         });
     }
