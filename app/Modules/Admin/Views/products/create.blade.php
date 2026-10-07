@@ -12,7 +12,7 @@
         <a href="{{ route('admin.products.index') }}" class="text-sm text-green-600 hover:underline">← Quay lại danh sách</a>
     </div>
 
-    <form action="{{ route('admin.products.store') }}" method="POST" class="space-y-6 rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
+    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6 rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
         @csrf
 
         <div>
@@ -68,11 +68,18 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700">Hình ảnh</label>
-            <input name="thumbnail" value="{{ old('thumbnail') }}" type="text"
-                   class="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700"
-                   placeholder="URL hoặc đường dẫn ảnh" />
-            @error('thumbnail')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+            <label for="images" class="block text-sm font-medium text-gray-700">Hình ảnh (tối đa 5 ảnh)</label>
+            <input id="images" name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple
+                   class="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700" />
+            <p class="mt-1 text-sm text-gray-500">Chọn tối đa 5 ảnh JPG, PNG hoặc WEBP (mỗi ảnh tối đa 5 MB).</p>
+            @error('images')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+            @foreach($errors->getMessages() as $field => $messages)
+                @if(str_starts_with($field, 'images.'))
+                    @foreach($messages as $message)
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @endforeach
+                @endif
+            @endforeach
         </div>
 
         <div class="flex justify-end gap-3">
