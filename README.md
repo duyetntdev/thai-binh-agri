@@ -53,7 +53,7 @@ Nông dân / HTX Thái Bình  →  Nền tảng  →  Người tiêu dùng toàn
 **Quản trị viên:**
 - Dashboard tổng quan: doanh thu, đơn hàng hôm nay, sản phẩm sắp hết hàng
 - Quản lý CRUD sản phẩm và danh mục
-- Cập nhật trạng thái đơn hàng (pending → processing → shipped → delivered)
+- Xác nhận hoặc hủy đơn đang chờ; ghi nhận đã thanh toán; cập nhật đang giao hoặc hoàn thành/đã giao
 - Quản lý danh sách người dùng
 
 ---
@@ -322,6 +322,12 @@ Khách hủy  →  PATCH /don-hang/{id}/cancel
            →  Kiểm tra status (chỉ pending/processing mới được hủy)
            →  Hoàn stock về sản phẩm (DB transaction)
            →  Cập nhật status = cancelled
+
+Admin xác nhận đơn pending → processing
+     Hủy đơn pending/processing → cancelled (hoàn stock trong DB transaction)
+     Admin ghi nhận đã thanh toán cho đơn đã xác nhận
+     Đơn đã thanh toán: processing → shipped → delivered
+                       hoặc processing → delivered
 ```
 
 ### Luồng thanh toán VNPay

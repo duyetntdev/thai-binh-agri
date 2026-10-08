@@ -11,7 +11,7 @@
         </div>
     </div>
 
-    <form action="{{ route('admin.orders.index') }}" method="GET" class="mt-6 grid gap-3 sm:grid-cols-3">
+    <form action="{{ route('admin.orders.index') }}" method="GET" class="mt-6 grid gap-3 sm:grid-cols-4">
         <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Tìm kiếm theo khách hàng"
                class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700" />
         <select name="status" class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
@@ -22,7 +22,14 @@
         </select>
         <input name="payment_status" value="{{ $filters['payment_status'] ?? '' }}" placeholder="Trạng thái thanh toán"
                class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700" />
+        <button type="submit" class="rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white hover:bg-green-700">
+            Tìm kiếm
+        </button>
     </form>
+
+    @if(session('success'))
+        <div class="mt-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>
+    @endif
 
     <div class="mt-6 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
         <table class="min-w-full divide-y divide-gray-200">
@@ -47,7 +54,51 @@
                         <td class="px-4 py-4 text-gray-700">{{ ucfirst($order->payment_status->label()) }}</td>
                         <td class="px-4 py-4 text-gray-500">{{ $order->created_at->format('d/m/Y') }}</td>
                         <td class="px-4 py-4">
-                            <a href="{{ route('admin.orders.show', $order) }}" class="text-green-600 hover:underline">Xem</a>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <a href="{{ route('admin.orders.show', $order) }}" class="text-green-600 hover:underline">Xem</a>
+                                @if($order->status === \App\Models\OrderStatus::PENDING)
+                                    <form action="{{ route('admin.orders.update-status', $order) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="{{ \App\Models\OrderStatus::PROCESSING->value }}">
+                                        <button type="submit" class="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700">Xác nhận</button>
+                                    </form>
+                                    <form action="{{ route('admin.orders.update-status', $order) }}" method="POST"
+                                          onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="{{ \App\Models\OrderStatus::CANCELLED->value }}">
+                                        <button type="submit" class="rounded-lg border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50">Hủy đơn</button>
+                                    </form>
+                                @elseif($order->status === \App\Models\OrderStatus::PROCESSING && ! $order->isPaid())
+                                    <form action="{{ route('admin.orders.mark-paid', $order) }}" method="POST"
+                                          onsubmit="return confirm('Xác nhận đã nhận đủ tiền thanh toán cho đơn hàng này?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">Đánh dấu đã thanh toán</button>
+                                    </form>
+                                @elseif($order->status === \App\Models\OrderStatus::PROCESSING && $order->isPaid())
+                                    <form action="{{ route('admin.orders.update-status', $order) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="{{ \App\Models\OrderStatus::SHIPPED->value }}">
+                                        <button type="submit" class="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700">Đang giao</button>
+                                    </form>
+                                    <form action="{{ route('admin.orders.update-status', $order) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="{{ \App\Models\OrderStatus::DELIVERED->value }}">
+                                        <button type="submit" class="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700">Đã giao</button>
+                                    </form>
+                                @elseif($order->status === \App\Models\OrderStatus::SHIPPED && $order->isPaid())
+                                    <form action="{{ route('admin.orders.update-status', $order) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="{{ \App\Models\OrderStatus::DELIVERED->value }}">
+                                        <button type="submit" class="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700">Đã giao</button>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty

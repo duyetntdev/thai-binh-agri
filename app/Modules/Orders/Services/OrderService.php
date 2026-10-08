@@ -5,6 +5,7 @@ namespace App\Modules\Orders\Services;
 use App\Exceptions\InsufficientStockException;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use App\Models\PaymentMethod;
 use App\Models\PaymentStatus;
 use App\Models\Product;
 use App\Models\User;
@@ -12,6 +13,7 @@ use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
@@ -56,7 +58,7 @@ class OrderService
             }
         }
 
-        return DB::transaction(function () use ($user, $items, $notes, $provinceId, $wardId, $shippingAddress, $shippingPhone) {
+        return DB::transaction(function () use ($user, $items, $paymentMethod, $notes, $provinceId, $wardId, $shippingAddress, $shippingPhone) {
             $totalAmount = 0;
             $orderItems = [];
 
@@ -87,6 +89,12 @@ class OrderService
                 'ward_id' => $wardId,
             ]);
 
+            $order->payment()->create([
+                'amount' => $totalAmount,
+                'method' => PaymentMethod::from($paymentMethod),
+                'status' => PaymentStatus::PENDING,
+            ]);
+
             foreach ($orderItems as $item) {
                 $order->items()->create($item);
                 // Tăng sold_count cho sản phẩm
@@ -109,18 +117,64 @@ class OrderService
             abort(403);
         }
 
-        if (! $order->canBeCancelled()) {
-            throw new \RuntimeException('Đơn hàng không thể hủy ở trạng thái hiện tại.');
-        }
+        return $this->transitionStatus($order, OrderStatus::CANCELLED);
+    }
 
-        DB::transaction(function () use ($order) {
-            foreach ($order->items as $item) {
-                $this->productRepository->incrementStock($item->product, $item->quantity);
+    public function updateStatusByAdmin(Order $order, OrderStatus $status): Order
+    {
+        return $this->transitionStatus($order, $status);
+    }
+
+    public function markPaidByAdmin(Order $order): Order
+    {
+        return DB::transaction(function () use ($order) {
+            $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
+
+            if ($lockedOrder->status !== OrderStatus::PROCESSING || $lockedOrder->isPaid()) {
+                throw ValidationException::withMessages([
+                    'payment' => 'Chỉ có thể xác nhận thanh toán cho đơn đã xác nhận và chưa thanh toán.',
+                ]);
             }
 
-            $this->orderRepository->updateStatus($order, OrderStatus::CANCELLED);
-        });
+            $payment = $lockedOrder->payment()->firstOrNew([], [
+                'amount' => $lockedOrder->total_amount,
+                'method' => PaymentMethod::COD,
+            ]);
+            $payment->status = PaymentStatus::COMPLETED;
+            $payment->paid_at = now();
+            $payment->save();
 
-        return $order->fresh();
+            $lockedOrder->update(['payment_status' => PaymentStatus::COMPLETED]);
+
+            return $lockedOrder->fresh();
+        });
+    }
+
+    private function transitionStatus(Order $order, OrderStatus $status): Order
+    {
+        return DB::transaction(function () use ($order, $status) {
+            $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
+
+            if (! $lockedOrder->status->canTransitionTo($status, $lockedOrder->isPaid())) {
+                $message = in_array($status, [OrderStatus::SHIPPED, OrderStatus::DELIVERED])
+                    && ! $lockedOrder->isPaid()
+                    ? 'Chỉ có thể giao hàng sau khi đơn hàng đã được thanh toán.'
+                    : 'Không thể chuyển đơn hàng sang trạng thái đã chọn.';
+
+                throw ValidationException::withMessages(['status' => $message]);
+            }
+
+            if ($status === OrderStatus::CANCELLED) {
+                $lockedOrder->load('items.product');
+
+                foreach ($lockedOrder->items as $item) {
+                    $this->productRepository->incrementStock($item->product, $item->quantity);
+                }
+            }
+
+            $this->orderRepository->updateStatus($lockedOrder, $status);
+
+            return $lockedOrder->fresh();
+        });
     }
 }
