@@ -184,6 +184,16 @@
         {{ session('error') }}
     </div>
 @endif
+<div x-data="{ show: false, message: '', timer: null }"
+     x-show="show"
+     x-on:cart-added.window="message = `Đã thêm ${$event.detail.productName} vào giỏ hàng`; show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 3500)"
+     style="display: none"
+     x-transition.opacity
+     role="status"
+     aria-live="polite"
+     class="fixed top-20 right-4 z-50 bg-green-600 text-white px-5 py-3 rounded-lg shadow-lg text-sm">
+    <span x-text="message"></span>
+</div>
 
 {{-- ===== MAIN CONTENT ===== --}}
 <main>
