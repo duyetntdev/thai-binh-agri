@@ -5,15 +5,20 @@ namespace App\Modules\Admin\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use App\Modules\Admin\Requests\MarkOrderPaidRequest;
 use App\Modules\Admin\Requests\UpdateOrderStatusRequest;
+use App\Modules\Orders\Services\OrderService;
 use App\Repositories\Contracts\OrderRepositoryInterface;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class OrderAdminController extends Controller
 {
-    public function __construct(private readonly OrderRepositoryInterface $orderRepository) {}
+    public function __construct(
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly OrderService $orderService,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -33,9 +38,17 @@ class OrderAdminController extends Controller
     public function updateStatus(UpdateOrderStatusRequest $request, Order $order): RedirectResponse
     {
         $status = OrderStatus::from($request->input('status'));
-        $this->orderRepository->updateStatus($order, $status);
+        $this->orderService->updateStatusByAdmin($order, $status);
 
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Trạng thái đơn hàng đã được cập nhật.');
+    }
+
+    public function markPaid(MarkOrderPaidRequest $request, Order $order): RedirectResponse
+    {
+        $this->orderService->markPaidByAdmin($order);
+
+        return redirect()->route('admin.orders.show', $order)
+            ->with('success', 'Đã xác nhận đơn hàng đã thanh toán.');
     }
 }

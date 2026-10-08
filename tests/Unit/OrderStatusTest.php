@@ -23,4 +23,17 @@ class OrderStatusTest extends TestCase
             $this->assertNotSame('', $status->color());
         }
     }
+
+    public function test_order_status_transitions_follow_the_admin_workflow(): void
+    {
+        $this->assertTrue(OrderStatus::PENDING->canTransitionTo(OrderStatus::PROCESSING, false));
+        $this->assertTrue(OrderStatus::PENDING->canTransitionTo(OrderStatus::CANCELLED, false));
+        $this->assertTrue(OrderStatus::PROCESSING->canTransitionTo(OrderStatus::CANCELLED, false));
+        $this->assertFalse(OrderStatus::PROCESSING->canTransitionTo(OrderStatus::SHIPPED, false));
+        $this->assertTrue(OrderStatus::PROCESSING->canTransitionTo(OrderStatus::SHIPPED, true));
+        $this->assertTrue(OrderStatus::PROCESSING->canTransitionTo(OrderStatus::DELIVERED, true));
+        $this->assertTrue(OrderStatus::SHIPPED->canTransitionTo(OrderStatus::DELIVERED, true));
+        $this->assertFalse(OrderStatus::DELIVERED->canTransitionTo(OrderStatus::PROCESSING, true));
+        $this->assertFalse(OrderStatus::CANCELLED->canTransitionTo(OrderStatus::PROCESSING, true));
+    }
 }
