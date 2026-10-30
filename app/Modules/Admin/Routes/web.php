@@ -1,8 +1,8 @@
 <?php
 
 use App\Modules\Admin\Controllers\DashboardController;
-use App\Modules\Admin\Controllers\ProductAdminController;
 use App\Modules\Admin\Controllers\OrderAdminController;
+use App\Modules\Admin\Controllers\ProductAdminController;
 use App\Modules\Admin\Controllers\UserAdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +18,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('orders', [OrderAdminController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [OrderAdminController::class, 'show'])->name('orders.show');
     Route::patch('orders/{order}/status', [OrderAdminController::class, 'updateStatus'])->name('orders.update-status');
+    Route::patch('orders/{order}/payment', [OrderAdminController::class, 'markPaid'])->name('orders.mark-paid');
 
     // Users management
     Route::get('users', [UserAdminController::class, 'index'])->name('users.index');

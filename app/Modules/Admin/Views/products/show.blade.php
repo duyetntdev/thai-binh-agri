@@ -3,6 +3,13 @@
 @section('title', 'Chi tiết sản phẩm')
 
 @section('content')
+@php
+    $galleryImages = array_map(
+        static fn (string $image): string => filter_var($image, FILTER_VALIDATE_URL) ? $image : asset('storage/' . $image),
+        $product->galleryImages(),
+    );
+@endphp
+
 <section class="max-w-4xl mx-auto px-4 py-10">
     <div class="mb-6 flex items-center justify-between">
         <div>
@@ -37,10 +44,28 @@
             <p class="mt-3 text-gray-700 leading-7">{{ $product->description }}</p>
         </div>
 
-        @if($product->thumbnail)
+        @if($galleryImages)
             <div>
                 <p class="text-sm text-gray-500">Hình ảnh</p>
-                <img src="{{ $product->thumbnail }}" alt="{{ $product->name }}" class="mt-3 rounded-3xl border border-gray-200 object-cover w-full max-h-80" />
+                <div x-data="{ activeImage: 0, images: @js($galleryImages) }" class="mt-3">
+                    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
+                        <img :src="images[activeImage]" alt="{{ $product->name }}"
+                             class="h-80 w-full object-contain transition-opacity duration-200" />
+                    </div>
+                    <div class="mt-3 flex gap-3 overflow-x-auto pb-1">
+                        @foreach($galleryImages as $index => $image)
+                            <button type="button"
+                                    @click="activeImage = {{ $index }}"
+                                    @mouseenter="activeImage = {{ $index }}"
+                                    :aria-pressed="activeImage === {{ $index }}"
+                                    aria-label="Xem ảnh {{ $index + 1 }}"
+                                    :class="activeImage === {{ $index }} ? 'border-green-600 ring-2 ring-green-100' : 'border-gray-200 hover:border-green-400'"
+                                    class="h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 transition">
+                                <img src="{{ $image }}" alt="" class="h-full w-full object-cover" />
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
             </div>
         @endif
     </div>

@@ -4,6 +4,7 @@ namespace App\Modules\Cart\Controllers;
 
 use App\Cart\Cart;
 use App\Http\Controllers\Controller;
+use App\Models\Province;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -13,7 +14,7 @@ use Illuminate\View\View;
 class CartController extends Controller
 {
     public function __construct(
-        private readonly Cart                       $cart,
+        private readonly Cart $cart,
         private readonly ProductRepositoryInterface $productRepository,
     ) {}
 
@@ -22,7 +23,15 @@ class CartController extends Controller
         return view('cart::index', [
             'items' => $this->cart->items(),
             'total' => $this->cart->total(),
+            'provinces' => Province::query()->orderBy('name')->get(),
         ]);
+    }
+
+    public function wards(Province $province): JsonResponse
+    {
+        return response()->json(
+            $province->wards()->orderBy('name')->get(['id', 'name', 'division_type'])
+        );
     }
 
     /**
@@ -35,7 +44,7 @@ class CartController extends Controller
 
         $rules = ['quantity' => ['sometimes', 'integer', 'min:1']];
         if ($product->stock > 0) {
-            $rules['quantity'][] = 'max:' . $product->stock;
+            $rules['quantity'][] = 'max:'.$product->stock;
         }
 
         $request->validate($rules);
@@ -54,7 +63,7 @@ class CartController extends Controller
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message'    => "Đã thêm \"{$product->name}\" vào giỏ hàng.",
+                'message' => "Đã thêm \"{$product->name}\" vào giỏ hàng.",
                 'cart_count' => $this->cart->count(),
                 'cart_total' => $this->cart->total(),
             ]);
@@ -72,7 +81,19 @@ class CartController extends Controller
             'quantity' => ['required', 'integer', 'min:0', 'max:100'],
         ]);
 
-        $this->cart->updateQuantity($productId, (int) $request->input('quantity'));
+        $quantity = (int) $request->input('quantity');
+
+        if ($quantity <= 0 || ! $this->cart->has($productId)) {
+            $this->cart->updateQuantity($productId, 0, 0);
+        } else {
+            $product = $this->productRepository->findByIdOrFail($productId);
+
+            if (! $product->isActive() || ! $product->isInStock()) {
+                $this->cart->remove($productId);
+            } else {
+                $this->cart->updateQuantity($productId, $quantity, $product->stock);
+            }
+        }
 
         if ($request->expectsJson()) {
             return response()->json([

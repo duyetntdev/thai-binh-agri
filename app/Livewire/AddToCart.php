@@ -14,7 +14,6 @@ class AddToCart extends Component
 {
     public Product $product;
     public int     $quantity = 1;
-    public bool    $added    = false;
     public bool    $compact  = false;
 
     public function mount(Product $product, bool $compact = false): void
@@ -47,11 +46,8 @@ class AddToCart extends Component
 
             app(Cart::class)->add($this->product, $this->quantity);
 
-            $this->added = true;
-
-            // Notify CartIcon to refresh
-            $this->emit('cartUpdated');
-            $this->dispatchBrowserEvent('cart-added');
+            $this->dispatch('cart-updated');
+            $this->dispatch('cart-added', productName: $this->product->name);
         } catch (\Throwable $e) {
             \Log::error('AddToCart failed', [
                 'product_id' => $this->product->id ?? null,

@@ -20,6 +20,7 @@ class Product extends Model
         'category_id',
         'stock',
         'thumbnail',
+        'images',
         'status',
         'view_count',
         'sold_count',
@@ -30,6 +31,7 @@ class Product extends Model
         'stock'      => 'integer',
         'view_count' => 'integer',
         'sold_count' => 'integer',
+        'images'     => 'array',
     ];
 
     // -------------------------------------------------------------------------
@@ -58,6 +60,11 @@ class Product extends Model
     public function isInStock(): bool
     {
         return $this->stock > 0;
+    }
+
+    public function galleryImages(): array
+    {
+        return $this->images ?: array_values(array_filter([$this->thumbnail]));
     }
 
     public function decreaseStock(int $quantity): void

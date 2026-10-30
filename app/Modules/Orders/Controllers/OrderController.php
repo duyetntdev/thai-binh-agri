@@ -27,7 +27,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->load(['items.product', 'payment', 'user']);
+        $order->load(['items.product', 'payment', 'user', 'province', 'ward']);
 
         return view('orders::show', compact('order'));
     }
@@ -38,11 +38,15 @@ class OrderController extends Controller
             user: auth()->user(),
             items: $request->input('items'),
             paymentMethod: $request->input('payment_method'),
+            provinceId: (int) $request->input('province_id'),
+            wardId: (int) $request->input('ward_id'),
+            shippingAddress: $request->input('shipping_address'),
+            shippingPhone: $request->input('shipping_phone'),
             notes: $request->input('notes'),
         );
 
         return redirect()->route('orders.show', $order)
-            ->with('success', 'Đặt hàng thành công! Mã đơn hàng: #' . $order->id);
+            ->with('success', 'Đặt hàng thành công! Mã đơn hàng: #'.$order->id);
     }
 
     public function cancel(Order $order): RedirectResponse

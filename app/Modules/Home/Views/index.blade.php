@@ -5,17 +5,15 @@
 @section('content')
 
 {{-- ===== HERO ===== --}}
-<section class="relative overflow-hidden text-white py-20"
-         style="background-image: url('{{ asset('images/ba.png') }}'); background-size: cover; background-position: center;">
-    <div class="absolute inset-0 bg-green-900/60"></div>
-    <div class="relative max-w-7xl mx-auto px-4 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">Nông Sản Sạch Thái Bình</h1>
-        <p class="text-lg text-green-100 mb-8 max-w-xl mx-auto">
-            Trực tiếp từ nông dân — tươi ngon, an toàn, giá tốt.
-        </p>
+<section class="relative overflow-hidden border-b border-green-100 bg-white">
+    <img src="{{ asset('images/ba.png') }}"
+         alt="Nông sản Thái Bình, tinh hoa từ đất - giá trị từ tâm"
+         class="block h-auto w-full">
+
+    <div class="mx-auto flex max-w-7xl justify-center px-4 py-4 sm:absolute sm:inset-x-0 sm:top-[70%] sm:mx-auto sm:w-full sm:-translate-y-1/2 sm:py-0">
         <a href="{{ route('products.index') }}"
-           class="inline-block bg-white text-green-700 font-semibold px-8 py-3 rounded-full
-                  hover:bg-green-50 transition shadow-md">
+           class="inline-flex items-center justify-center rounded-lg bg-green-700 px-6 py-3 text-sm font-semibold text-white
+                  shadow-sm transition hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2">
             Xem tất cả sản phẩm
         </a>
     </div>

@@ -12,7 +12,7 @@
         <a href="{{ route('admin.products.create') }}" class="inline-flex items-center justify-center bg-green-600 text-white px-5 py-3 rounded-lg shadow hover:bg-green-700 transition">Thêm sản phẩm</a>
     </div>
 
-    <form action="{{ route('admin.products.index') }}" method="GET" class="mt-6 grid gap-3 sm:grid-cols-3">
+    <form action="{{ route('admin.products.index') }}" method="GET" class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Tìm kiếm theo tên"
                class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700" />
         <select name="status" class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
@@ -26,6 +26,13 @@
                 <option value="{{ $category->slug }}" {{ ($filters['category'] ?? '') === $category->slug ? 'selected' : '' }}>{{ $category->name }}</option>
             @endforeach
         </select>
+        <button type="submit"
+                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35m1.6-5.15a6.75 6.75 0 1 1-13.5 0 6.75 6.75 0 0 1 13.5 0Z" />
+            </svg>
+            Tìm kiếm
+        </button>
     </form>
 
     <div class="mt-6 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">

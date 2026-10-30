@@ -10,7 +10,10 @@ use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Throwable;
 
 class ProductAdminController extends Controller
 {
@@ -37,7 +40,20 @@ class ProductAdminController extends Controller
 
     public function store(StoreProductRequest $request): RedirectResponse
     {
-        $product = $this->productRepository->create($request->validated());
+        $data = $request->validated();
+        $uploads = $data['images'] ?? [];
+        unset($data['images']);
+
+        $paths = $this->storeImages($uploads);
+        $data['images'] = $paths;
+        $data['thumbnail'] = $paths[0] ?? null;
+
+        try {
+            $product = $this->productRepository->create($data);
+        } catch (Throwable $exception) {
+            $this->deleteStoredImages($paths);
+            throw $exception;
+        }
 
         return redirect()->route('admin.products.edit', $product)
             ->with('success', 'Sản phẩm đã được tạo thành công.');
@@ -57,7 +73,27 @@ class ProductAdminController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
-        $this->productRepository->update($product, $request->validated());
+        $data = $request->validated();
+        $uploads = $data['images'] ?? [];
+        unset($data['images']);
+
+        if ($uploads !== []) {
+            $oldPaths = array_merge($product->images ?? [], [$product->thumbnail]);
+            $paths = $this->storeImages($uploads);
+            $data['images'] = $paths;
+            $data['thumbnail'] = $paths[0];
+
+            try {
+                $this->productRepository->update($product, $data);
+            } catch (Throwable $exception) {
+                $this->deleteStoredImages($paths);
+                throw $exception;
+            }
+
+            $this->deleteStoredImages($oldPaths);
+        } else {
+            $this->productRepository->update($product, $data);
+        }
 
         return redirect()->route('admin.products.edit', $product)
             ->with('success', 'Sản phẩm đã được cập nhật.');
@@ -69,5 +105,44 @@ class ProductAdminController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Sản phẩm đã được xóa.');
+    }
+
+    /**
+     * @param array<int, UploadedFile> $uploads
+     * @return array<int, string>
+     */
+    private function storeImages(array $uploads): array
+    {
+        $paths = [];
+
+        try {
+            foreach ($uploads as $upload) {
+                $path = $upload->store('products', 'public');
+                if ($path === false) {
+                    throw new \RuntimeException('Không thể lưu hình ảnh sản phẩm.');
+                }
+                $paths[] = $path;
+            }
+        } catch (Throwable $exception) {
+            $this->deleteStoredImages($paths);
+            throw $exception;
+        }
+
+        return $paths;
+    }
+
+    /**
+     * @param array<int, mixed> $paths
+     */
+    private function deleteStoredImages(array $paths): void
+    {
+        $paths = array_values(array_unique(array_filter(
+            $paths,
+            static fn ($path) => is_string($path) && str_starts_with($path, 'products/'),
+        )));
+
+        if ($paths !== []) {
+            Storage::disk('public')->delete($paths);
+        }
     }
 }
