@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Module service providers
         \App\Modules\Home\Providers\HomeServiceProvider::class,
+        \App\Modules\Blog\Providers\BlogServiceProvider::class,
         \App\Modules\Auth\Providers\AuthServiceProvider::class,
         \App\Modules\Cart\Providers\CartServiceProvider::class,
         \App\Modules\Products\Providers\ProductsServiceProvider::class,

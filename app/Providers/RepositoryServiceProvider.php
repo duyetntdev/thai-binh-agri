@@ -3,12 +3,14 @@
 namespace App\Providers;
 
 use App\Cart\Cart;
+use App\Repositories\Contracts\BlogRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\CategoryRepository;
+use App\Repositories\Eloquent\BlogRepository;
 use App\Repositories\Eloquent\OrderRepository;
 use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\ProductRepository;
@@ -24,6 +26,7 @@ class RepositoryServiceProvider extends ServiceProvider
 {
     /** @var array<class-string, class-string> */
     public array $bindings = [
+        BlogRepositoryInterface::class     => BlogRepository::class,
         ProductRepositoryInterface::class  => ProductRepository::class,
         CategoryRepositoryInterface::class => CategoryRepository::class,
         OrderRepositoryInterface::class    => OrderRepository::class,
