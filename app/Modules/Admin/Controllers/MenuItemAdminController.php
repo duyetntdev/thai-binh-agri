@@ -4,15 +4,19 @@ namespace App\Modules\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\MenuItem;
+use App\Modules\Admin\Requests\StoreMenuItemRequest;
+use App\Modules\Admin\Requests\UpdateMenuItemRequest;
+use App\Modules\Admin\Services\MenuItemService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class MenuItemAdminController extends Controller
 {
+    public function __construct(private readonly MenuItemService $menuItemService) {}
+
     public function index(): View
     {
-        $menuItems = MenuItem::orderBy('sort_order')->get();
+        $menuItems = $this->menuItemService->all();
 
         return view('admin::menu-items.index', compact('menuItems'));
     }
@@ -22,18 +26,13 @@ class MenuItemAdminController extends Controller
         return view('admin::menu-items.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreMenuItemRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'label' => ['required', 'string', 'max:120'],
-            'url' => ['required', 'string', 'max:255'],
-            'sort_order' => ['required', 'integer'],
-            'is_active' => ['sometimes', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $data['is_active'] = $request->has('is_active');
 
-        MenuItem::create($data);
+        $this->menuItemService->create($data);
 
         return redirect()->route('admin.menu-items.index')
             ->with('success', 'Menu đã được tạo thành công.');
@@ -44,18 +43,13 @@ class MenuItemAdminController extends Controller
         return view('admin::menu-items.edit', compact('menuItem'));
     }
 
-    public function update(Request $request, MenuItem $menuItem): RedirectResponse
+    public function update(UpdateMenuItemRequest $request, MenuItem $menuItem): RedirectResponse
     {
-        $data = $request->validate([
-            'label' => ['required', 'string', 'max:120'],
-            'url' => ['required', 'string', 'max:255'],
-            'sort_order' => ['required', 'integer'],
-            'is_active' => ['sometimes', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $data['is_active'] = $request->has('is_active');
 
-        $menuItem->update($data);
+        $this->menuItemService->update($menuItem, $data);
 
         return redirect()->route('admin.menu-items.edit', $menuItem)
             ->with('success', 'Menu đã được cập nhật.');
@@ -63,7 +57,7 @@ class MenuItemAdminController extends Controller
 
     public function destroy(MenuItem $menuItem): RedirectResponse
     {
-        $menuItem->delete();
+        $this->menuItemService->delete($menuItem);
 
         return redirect()->route('admin.menu-items.index')
             ->with('success', 'Menu đã được xóa.');

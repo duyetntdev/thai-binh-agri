@@ -20,6 +20,7 @@
         }
     </script>
 
+    @stack('styles')
     @livewireStyles
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -78,6 +79,7 @@
                 <a href="{{ route('home.about') }}" class="text-gray-600 hover:text-green-700 transition">Giới thiệu</a>
                 <a href="{{ route('home.contact') }}" class="text-gray-600 hover:text-green-700 transition">Liên hệ</a>
                 <a href="{{ route('home.news') }}" class="text-gray-600 hover:text-green-700 transition">Tin tức</a>
+                <a href="{{ route('home.blog.index') }}" class="text-gray-600 hover:text-green-700 transition">Blog</a>
                 <a href="{{ route('home.policy') }}" class="text-gray-600 hover:text-green-700 transition">Chính sách</a>
             </nav>
 

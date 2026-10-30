@@ -4,15 +4,19 @@ namespace App\Modules\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Modules\Admin\Requests\StorePageRequest;
+use App\Modules\Admin\Requests\UpdatePageRequest;
+use App\Modules\Admin\Services\PageService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PageAdminController extends Controller
 {
+    public function __construct(private readonly PageService $pageService) {}
+
     public function index(): View
     {
-        $pages = Page::orderBy('slug')->get();
+        $pages = $this->pageService->all();
 
         return view('admin::pages.index', compact('pages'));
     }
@@ -22,19 +26,13 @@ class PageAdminController extends Controller
         return view('admin::pages.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StorePageRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:150'],
-            'slug' => ['required', 'string', 'max:150', 'alpha_dash', 'unique:pages,slug'],
-            'content' => ['nullable', 'string'],
-            'meta_title' => ['nullable', 'string', 'max:180'],
-            'is_active' => ['sometimes', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $data['is_active'] = $request->has('is_active');
 
-        Page::create($data);
+        $this->pageService->create($data);
 
         return redirect()->route('admin.pages.index')
             ->with('success', 'Nội dung trang đã được tạo.');
@@ -45,19 +43,13 @@ class PageAdminController extends Controller
         return view('admin::pages.edit', compact('page'));
     }
 
-    public function update(Request $request, Page $page): RedirectResponse
+    public function update(UpdatePageRequest $request, Page $page): RedirectResponse
     {
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:150'],
-            'slug' => ['required', 'string', 'max:150', 'alpha_dash', 'unique:pages,slug,' . $page->id],
-            'content' => ['nullable', 'string'],
-            'meta_title' => ['nullable', 'string', 'max:180'],
-            'is_active' => ['sometimes', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $data['is_active'] = $request->has('is_active');
 
-        $page->update($data);
+        $this->pageService->update($page, $data);
 
         return redirect()->route('admin.pages.edit', $page)
             ->with('success', 'Nội dung trang đã được cập nhật.');
@@ -65,7 +57,7 @@ class PageAdminController extends Controller
 
     public function destroy(Page $page): RedirectResponse
     {
-        $page->delete();
+        $this->pageService->delete($page);
 
         return redirect()->route('admin.pages.index')
             ->with('success', 'Nội dung trang đã được xóa.');

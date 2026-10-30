@@ -3,13 +3,19 @@
 namespace App\Providers;
 
 use App\Cart\Cart;
+use App\Repositories\Contracts\BlogRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
+use App\Repositories\Contracts\MenuItemRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
+use App\Repositories\Contracts\PageRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Eloquent\BlogRepository;
 use App\Repositories\Eloquent\CategoryRepository;
+use App\Repositories\Eloquent\MenuItemRepository;
 use App\Repositories\Eloquent\OrderRepository;
+use App\Repositories\Eloquent\PageRepository;
 use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\ProductRepository;
 use App\Repositories\Eloquent\UserRepository;
@@ -24,11 +30,14 @@ class RepositoryServiceProvider extends ServiceProvider
 {
     /** @var array<class-string, class-string> */
     public array $bindings = [
-        ProductRepositoryInterface::class  => ProductRepository::class,
+        BlogRepositoryInterface::class => BlogRepository::class,
+        MenuItemRepositoryInterface::class => MenuItemRepository::class,
+        PageRepositoryInterface::class => PageRepository::class,
+        ProductRepositoryInterface::class => ProductRepository::class,
         CategoryRepositoryInterface::class => CategoryRepository::class,
-        OrderRepositoryInterface::class    => OrderRepository::class,
-        UserRepositoryInterface::class     => UserRepository::class,
-        PaymentRepositoryInterface::class  => PaymentRepository::class,
+        OrderRepositoryInterface::class => OrderRepository::class,
+        UserRepositoryInterface::class => UserRepository::class,
+        PaymentRepositoryInterface::class => PaymentRepository::class,
     ];
 
     public function register(): void

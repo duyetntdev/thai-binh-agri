@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Services;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -37,15 +38,15 @@ class AuthService
      */
     public function register(array $data): User
     {
-        $user = $this->userRepository->create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
+        $user = DB::transaction(fn () => $this->userRepository->create([
+            'name' => $data['name'],
+            'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'phone'    => $data['phone'] ?? null,
-            'address'  => $data['address'] ?? null,
-            'city'     => $data['city'] ?? null,
-            'role'     => 'customer',
-        ]);
+            'phone' => $data['phone'] ?? null,
+            'address' => $data['address'] ?? null,
+            'city' => $data['city'] ?? null,
+            'role' => 'customer',
+        ]));
 
         Auth::login($user);
 

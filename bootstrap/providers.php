@@ -5,6 +5,7 @@ return [
     // Module Service Providers
     App\Modules\Auth\Providers\AuthServiceProvider::class,
     App\Modules\Admin\Providers\AdminServiceProvider::class,
+    App\Modules\Blog\Providers\BlogServiceProvider::class,
     App\Modules\Home\Providers\HomeServiceProvider::class,
     App\Modules\Cart\Providers\CartServiceProvider::class,
     App\Modules\Products\Providers\ProductsServiceProvider::class,

@@ -11,6 +11,7 @@
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
             <a href="{{ route('admin.products.index') }}" class="inline-flex items-center justify-center bg-green-600 text-white px-5 py-3 rounded-lg shadow hover:bg-green-700 transition">Sản phẩm</a>
+            <a href="{{ route('admin.blogs.index') }}" class="inline-flex items-center justify-center bg-emerald-700 text-white px-5 py-3 rounded-lg shadow hover:bg-emerald-800 transition">Blog</a>
             <a href="{{ route('admin.orders.index') }}" class="inline-flex items-center justify-center bg-indigo-600 text-white px-5 py-3 rounded-lg shadow hover:bg-indigo-700 transition">Đơn hàng</a>
             <a href="{{ route('admin.users.index') }}" class="inline-flex items-center justify-center bg-slate-600 text-white px-5 py-3 rounded-lg shadow hover:bg-slate-700 transition">Người dùng</a>
         </div>

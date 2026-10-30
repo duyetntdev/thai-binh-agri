@@ -3,7 +3,6 @@
 namespace App\Modules\Home\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Page;
 use App\Modules\Home\Services\HomeService;
 use Illuminate\View\View;
 
