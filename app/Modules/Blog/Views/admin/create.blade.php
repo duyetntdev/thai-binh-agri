@@ -49,7 +49,7 @@
 
         <div>
             <label for="content" class="block text-sm font-medium text-gray-700">Nội dung HTML</label>
-            <textarea id="content" name="content" rows="24" required spellcheck="false"
+            <textarea id="content" name="content" rows="24" spellcheck="false"
                       class="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 font-mono text-sm text-gray-700"
                       placeholder="Dán nội dung HTML của bài viết vào đây">{{ old('content') }}</textarea>
             <p class="mt-1 text-xs text-gray-500">Có thể dán trực tiếp HTML; nội dung sẽ được hiển thị dưới dạng trang trên website.</p>

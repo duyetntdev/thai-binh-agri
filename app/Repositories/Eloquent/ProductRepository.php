@@ -3,10 +3,13 @@
 namespace App\Repositories\Eloquent;
 
 use App\Exceptions\InsufficientStockException;
+use App\Models\OrderItem;
+use App\Models\OrderStatus;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ProductRepository extends BaseRepository implements ProductRepositoryInterface
 {
@@ -24,13 +27,13 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         }
 
         if (! empty($filters['search'])) {
-            $query->where('name', 'like', '%' . $filters['search'] . '%');
+            $query->where('name', 'like', '%'.$filters['search'].'%');
         }
 
         match ($filters['sort'] ?? null) {
-            'price_asc'  => $query->orderBy('price'),
+            'price_asc' => $query->orderBy('price'),
             'price_desc' => $query->orderByDesc('price'),
-            default      => $query->latest(),
+            default => $query->latest(),
         };
 
         return $query->paginate($perPage)->withQueryString();
@@ -49,7 +52,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         }
 
         if (! empty($filters['search'])) {
-            $query->where('name', 'like', '%' . $filters['search'] . '%');
+            $query->where('name', 'like', '%'.$filters['search'].'%');
         }
 
         $query->latest();
@@ -129,10 +132,10 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
             ->active()
             ->whereHas('orderItems.order', function ($q) use ($userId) {
                 $q->where('user_id', $userId)
-                  ->where('status', \App\Models\OrderStatus::DELIVERED->value);
+                    ->where('status', OrderStatus::DELIVERED->value);
             })
             ->orderByDesc(
-                \App\Models\OrderItem::select('order_items.created_at')
+                OrderItem::select('order_items.created_at')
                     ->whereColumn('product_id', 'products.id')
                     ->join('orders', 'orders.id', '=', 'order_items.order_id')
                     ->where('orders.user_id', $userId)
@@ -145,6 +148,6 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
 
     public function incrementViewCount(Product $product): void
     {
-        $product->increment('view_count');
+        DB::transaction(fn () => $product->increment('view_count'));
     }
 }

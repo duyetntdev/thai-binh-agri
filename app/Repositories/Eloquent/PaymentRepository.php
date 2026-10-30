@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentStatus;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
+use Illuminate\Support\Facades\DB;
 
 class PaymentRepository extends BaseRepository implements PaymentRepositoryInterface
 {
@@ -21,33 +22,33 @@ class PaymentRepository extends BaseRepository implements PaymentRepositoryInter
 
     public function firstOrCreateForOrder(Order $order, array $data): Payment
     {
-        return Payment::firstOrCreate(
+        return DB::transaction(fn () => Payment::firstOrCreate(
             ['order_id' => $order->id],
             array_merge(['order_id' => $order->id], $data),
-        );
+        ));
     }
 
     public function markCompleted(Payment $payment, string $transactionId): Payment
     {
-        $payment->update([
+        DB::transaction(fn () => $payment->update([
             'transaction_id' => $transactionId,
-            'status'         => PaymentStatus::COMPLETED,
-            'paid_at'        => now(),
-        ]);
+            'status' => PaymentStatus::COMPLETED,
+            'paid_at' => now(),
+        ]));
 
         return $payment->fresh();
     }
 
     public function markFailed(Payment $payment): Payment
     {
-        $payment->update(['status' => PaymentStatus::FAILED]);
+        DB::transaction(fn () => $payment->update(['status' => PaymentStatus::FAILED]));
 
         return $payment->fresh();
     }
 
     public function updateStatus(Payment $payment, PaymentStatus $status): Payment
     {
-        $payment->update(['status' => $status]);
+        DB::transaction(fn () => $payment->update(['status' => $status]));
 
         return $payment->fresh();
     }

@@ -4,11 +4,14 @@ namespace App\Modules\Cart\Controllers;
 
 use App\Cart\Cart;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\WardResource;
+use App\Models\Product;
 use App\Models\Province;
+use App\Modules\Cart\Requests\AddToCartRequest;
+use App\Modules\Cart\Requests\UpdateCartItemRequest;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CartController extends Controller
@@ -29,27 +32,19 @@ class CartController extends Controller
 
     public function wards(Province $province): JsonResponse
     {
-        return response()->json(
-            $province->wards()->orderBy('name')->get(['id', 'name', 'division_type'])
-        );
+        $wards = $province->wards()->orderBy('name')->get();
+
+        return response()->json(WardResource::collection($wards)->resolve());
     }
 
     /**
      * Add a product to the cart.
      * Supports both AJAX (returns JSON) and regular form POST (redirects).
      */
-    public function add(Request $request, int $productId): JsonResponse|RedirectResponse
+    public function add(AddToCartRequest $request, Product $product): JsonResponse|RedirectResponse
     {
-        $product = $this->productRepository->findByIdOrFail($productId);
-
-        $rules = ['quantity' => ['sometimes', 'integer', 'min:1']];
-        if ($product->stock > 0) {
-            $rules['quantity'][] = 'max:'.$product->stock;
-        }
-
-        $request->validate($rules);
-
-        $quantity = (int) $request->input('quantity', 1);
+        $data = $request->validated();
+        $quantity = (int) ($data['quantity'] ?? 1);
 
         if (! $product->isActive() || ! $product->isInStock()) {
             $message = 'Sản phẩm hiện không có sẵn.';
@@ -75,13 +70,10 @@ class CartController extends Controller
     /**
      * Update the quantity of a cart item.
      */
-    public function update(Request $request, int $productId): JsonResponse|RedirectResponse
+    public function update(UpdateCartItemRequest $request, int $productId): JsonResponse|RedirectResponse
     {
-        $request->validate([
-            'quantity' => ['required', 'integer', 'min:0', 'max:100'],
-        ]);
-
-        $quantity = (int) $request->input('quantity');
+        $data = $request->validated();
+        $quantity = (int) $data['quantity'];
 
         if ($quantity <= 0 || ! $this->cart->has($productId)) {
             $this->cart->updateQuantity($productId, 0, 0);

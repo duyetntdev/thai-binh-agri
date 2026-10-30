@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Repositories\Contracts\BaseRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Abstract base repository providing default CRUD implementations.
@@ -31,18 +32,20 @@ abstract class BaseRepository implements BaseRepositoryInterface
 
     public function create(array $data): Model
     {
-        return $this->model->create($data);
+        return DB::transaction(fn () => $this->model->newQuery()->create($data));
     }
 
     public function update(Model $model, array $data): Model
     {
-        $model->update($data);
+        return DB::transaction(function () use ($model, $data): Model {
+            $model->update($data);
 
-        return $model->fresh();
+            return $model->fresh();
+        });
     }
 
     public function delete(Model $model): bool
     {
-        return (bool) $model->delete();
+        return DB::transaction(fn () => (bool) $model->delete());
     }
 }
