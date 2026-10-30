@@ -169,6 +169,28 @@
                     </li>
                 @endforeach
             </ul>
+            <div class="my-5 border-t border-gray-200"></div>
+            <h3 class="mb-2 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Thông tin</h3>
+            <ul class="space-y-2">
+                <li>
+                    <a href="{{ route('home.blog.index') }}"
+                       class="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-700">
+                        Blog
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('home.policy') }}"
+                       class="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-700">
+                        Chính sách
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('home.about') }}"
+                       class="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-700">
+                        Giới thiệu
+                    </a>
+                </li>
+            </ul>
         </nav>
     </div>
 </header>
