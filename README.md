@@ -552,11 +552,19 @@ Sau khi chạy seeder:
 
 ## 📝 Ghi chú phát triển
 
+### Tài liệu bắt buộc trước khi code
+
+- Đọc `AGENTS.md` ở thư mục gốc trước khi tạo hoặc cập nhật code.
+- Đọc `app/Modules/<Module>/README.md` của module liên quan; nếu thay đổi nhiều module, đọc tài liệu của tất cả module đó.
+- Khi thêm module mới, tạo tài liệu nghiệp vụ của module trước khi triển khai code.
+- Cập nhật tài liệu module nếu thay đổi làm đổi hành vi nghiệp vụ.
+
 ### Thêm module mới
 
 1. Tạo thư mục `app/Modules/TenModule/` với cấu trúc: `Controllers/`, `Services/`, `Routes/`, `Views/`, `Providers/`
 2. Tạo `TenModuleServiceProvider` extends `ServiceProvider`, load routes và views
 3. Đăng ký provider trong `bootstrap/app.php`
+4. Tạo `app/Modules/TenModule/README.md` mô tả nghiệp vụ trước khi triển khai code
 
 ### Thêm repository mới
 
