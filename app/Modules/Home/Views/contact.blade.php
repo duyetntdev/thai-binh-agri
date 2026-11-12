@@ -5,7 +5,7 @@
 @section('content')
 <section class="max-w-7xl mx-auto px-4 py-16">
     <div class="bg-white rounded-3xl border border-gray-200 p-10 shadow-sm">
-        <h1 class="text-4xl font-bold text-gray-800 mb-6">Liên hệ</h1>
+        <h1 class="text-4xl font-bold text-gray-800 mb-6">Thông tin liên hệ</h1>
         <p class="text-gray-600 leading-relaxed mb-6">
             Mọi thắc mắc và yêu cầu hỗ trợ xin vui lòng liên hệ với chúng tôi qua các kênh sau.
         </p>
