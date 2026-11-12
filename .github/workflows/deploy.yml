@@ -1,0 +1,127 @@
+name: Deploy production
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Không bao giờ chạy 2 deploy cùng lúc; deploy mới chờ deploy cũ xong.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ap-southeast-1
+  # Không phải secret: role chỉ assume được từ nhánh master của repo này (OIDC).
+  AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN || 'arn:aws:iam::886831123590:role/thai-binh-agri-github-deploy' }}
+  EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID || 'i-0f71e491fff656a64' }}
+  APP_DIR: ${{ vars.APP_DIR || '/var/www/thai-binh-agri' }}
+  # Production chạy docker compose (agri_php, agri_mysql, agri_redis); nginx host proxy → :8000.
+  DEPLOY_RUNTIME: ${{ vars.DEPLOY_RUNTIME || 'docker' }}
+  DOCKER_COMPOSE: ${{ vars.DOCKER_COMPOSE || 'docker compose' }}
+  PHP_FPM_SERVICE: ${{ vars.PHP_FPM_SERVICE || '' }}
+  APP_URL: ${{ vars.APP_URL || 'https://duyetnt.com' }}
+  LOG_GROUP: /thai-binh-agri/deploy
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, gd, zip, bcmath, pdo_mysql, redis
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      # Feature suite cần MySQL thật (middleware DatabaseTransaction) nên chưa chạy ở đây.
+      - run: vendor/bin/phpunit --testsuite Unit
+
+  deploy:
+    name: Deploy to EC2 (SSM)
+    needs: test
+    # Trust policy của role chỉ nhận token có sub = ref:refs/heads/master.
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assume deploy role (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: gh-deploy-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Send deploy command
+        id: send
+        run: |
+          script_b64=$(base64 -w0 scripts/pull-and-deploy.sh)
+          remote="f=\$(mktemp /tmp/tba-deploy.XXXXXX); echo '$script_b64' | base64 -d > \$f; chmod 644 \$f; \
+          APP_DIR='$APP_DIR' TARGET_SHA='$GITHUB_SHA' DEPLOY_RUNTIME='$DEPLOY_RUNTIME' \
+          DOCKER_COMPOSE='$DOCKER_COMPOSE' PHP_FPM_SERVICE='$PHP_FPM_SERVICE' bash \$f; rc=\$?; rm -f \$f; exit \$rc"
+          jq -n --arg c "$remote" '{commands: [$c], executionTimeout: ["900"]}' > params.json
+
+          command_id=$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy ${GITHUB_SHA::7} run ${GITHUB_RUN_ID}" \
+            --timeout-seconds 600 \
+            --parameters file://params.json \
+            --cloud-watch-output-config "CloudWatchOutputEnabled=true,CloudWatchLogGroupName=$LOG_GROUP" \
+            --query Command.CommandId --output text)
+          echo "command_id=$command_id" >> "$GITHUB_OUTPUT"
+          echo "SSM command: $command_id"
+
+      - name: Wait for deploy
+        env:
+          COMMAND_ID: ${{ steps.send.outputs.command_id }}
+        run: |
+          status=Pending
+          for _ in $(seq 1 180); do
+            status=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" \
+              --instance-id "$EC2_INSTANCE_ID" --query Status --output text 2>/dev/null || echo Pending)
+            case "$status" in Pending|InProgress|Delayed) sleep 5 ;; *) break ;; esac
+          done
+
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$EC2_INSTANCE_ID" \
+            --query StandardOutputContent --output text || true
+          echo "──── stderr ────"
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$EC2_INSTANCE_ID" \
+            --query StandardErrorContent --output text || true
+          echo "Log đầy đủ: CloudWatch $LOG_GROUP, stream $COMMAND_ID/$EC2_INSTANCE_ID/aws-runShellScript/stdout"
+
+          echo "Trạng thái: $status"
+          if [ "$status" != "Success" ]; then
+            echo "::error::Deploy thất bại ($status)"
+            exit 1
+          fi
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 10); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$APP_URL/up" || true)
+            echo "Lần $i: $APP_URL/up → $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 6
+          done
+          echo "::error::Health check thất bại"
+          exit 1
